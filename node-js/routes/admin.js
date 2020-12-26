@@ -1,11 +1,18 @@
+// global
+const path = require('path');
+
+// third-party
 const express = require('express');
 const router = express.Router();
 
+// mine
+const rootDir = require('../utils/path');
+
 router.get('/add-product', (req, res, next) => {
-  res.send('<form action="/product" method="POST"><input type="text" name="product-type"><button type="submit">Send</button></form>');
+  res.sendFile(path.join(rootDir, 'views', 'add-product.html'));
 });
 
-router.post('/product', (req, res, next) => {
+router.post('/add-product', (req, res, next) => {
   res.redirect('/');
   console.log(req.body);
 });
