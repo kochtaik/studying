@@ -1,20 +1,17 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const shop = require('./routes/shop');
+const admin = require('./routes/admin');
 
 app.use(bodyParser.urlencoded({extended: false}));
+app.use(admin);
+app.use(shop);
 
-app.use('/add-product', (req, res, next) => {
-  res.send('<form action="/product" method="POST"><input type="text" name="product-type"><button type="submit">Send</button></form>');
+app.use((req, res, next) => {
+  res.status(404).send('<h1>Page not found!</h1>');
 });
 
-app.post('/product', (req, res, next) => {
-  res.redirect('/');
-  console.log(req.body);
-});
 
-app.use('/', (req, res, next) => {
-  res.send('<h1>Welcome to the main page!</h1>');
-});
 
 app.listen(3000);
