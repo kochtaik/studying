@@ -3,8 +3,11 @@ const path = require('path');
 const PATH_TO_DATA = path.join(__dirname, '../', 'data', 'products-data.json');
 
 module.exports = class Product {
-  constructor(title) {
+  constructor(title, imageUrl, price, description) {
     this.title = title;
+    this.imageUrl = imageUrl;
+    this.price = price;
+    this.description = description;
   }
 
   static readProductsFile(cb) {
