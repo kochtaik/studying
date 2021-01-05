@@ -11,6 +11,19 @@ exports.getShopProducts = (req, res, next) => {
   });
 };
 
+exports.getProductId = (req, res, next) => {
+  const { productId } = req.params;
+  Product.getProductData(productId, (product) => {
+    console.log(product)
+    const productDetalisData = {
+      pageTitle: product.title,
+      path: '/products',
+      product: product,
+    }
+    res.render('shop/product-details', productDetalisData);
+  });
+}
+
 exports.getCartContent = (req, res, next) => {
   const cartContentData = {
     pageTitle: 'Cart',

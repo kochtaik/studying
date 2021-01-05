@@ -1,0 +1,14 @@
+extends ../templates/main.pug
+
+block content
+  main.details
+    h1 #{product.title}
+    hr
+    div
+      img(src=product.imageUrl)
+    h2 #{product.price}$
+    p #{product.description}
+    form(action="/products/add-to-cart", method="POST")
+      button.btn Add to Cart
+  
+

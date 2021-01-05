@@ -4,10 +4,13 @@ html(lang="en")
     meta(charset="UTF-8")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
     link(rel="stylesheet", href="/css/main.css")
+    script(defer src="/js/main.js")
     title #{pageTitle}
     block styles
   body
+    .backdrop
     header.main-header
+      button#side-menu-toggle Menu
       nav.main-header__nav
         ul.main-header__item-list
           li.main-header__item
@@ -22,5 +25,19 @@ html(lang="en")
             a(href="/admin/add-product", class=(path === '/admin/add-product' ? 'active' : '')) Add product
           li.main-header__item
             a(href="/admin/products", class=(path === '/admin/products' ? 'active' : '')) Admin products
-            
+      nav.mobile-nav
+        ul.mobile-nav__item-list
+          li.mobile-nav__item
+            a(class=(path === '/' ? 'active' : ''), href="/") Shop
+          li.mobile-nav__item
+            a(class=(path === '/products' ? 'active' : ''), href="/products") Products
+          li.mobile-nav__item
+            a(class=(path === '/cart' ? 'active' : '') href="/cart") Cart
+          li.mobile-nav__item
+            a(class=(path === '/orders' ? 'active' : '') href="/orders") Orders
+          li.mobile-nav__item
+            a(class=(path === '/admin/add-product' ? 'active' : '') href="/admin/add-product") Add Product
+          li.mobile-nav__item
+            a(class=(path === '/admin/products' ? 'active' : '') href="/admin/products") Admin Products
+
     block content
