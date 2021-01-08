@@ -8,17 +8,18 @@ block content
     if articles.length > 0
       .grid
         each product in articles
-          article.card.product-item
-            header.card__header
+          article.cart.product-item
+            header.cart__header
               h1.product__title #{product.title}
-            .card__image
+            .cart__image
               img(src=product.imageUrl alt="A Book")
-            .card__content
+            .cart__content
               h2.product__price #{product.price}$
                 p.product__description #{product.description}
-            .card__actions
+            .cart__actions
               a(href=`/admin/edit-product/${product.id}?edit=true`).btn Edit
               form(method="POST" action="/admin/delete-product")
+                input(type="hidden", name="productId", value=product.id)
                 button(type="submit").btn Delete
     else
       h1 No products here yet...

@@ -16,13 +16,35 @@ module.exports = class Cart {
       if (existingProduct !== undefined) {
         existingProduct.quantity = existingProduct.quantity + 1;
       } else { // if completely new product
+        console.log('cart', cart);
         cart.products = [...cart.products, { quantity: 1, id: id }];
       }
       cart.totalPrice += +price;
       fs.writeFile(PATH_TO_DATA, JSON.stringify(cart), (err) => {
-        console.log(err);
+        if (err) console.log(err);
       });
     });
   }
-}
 
+  static deleteProduct(id, price) {
+    fs.readFile(PATH_TO_DATA, (err, content) => {
+      if (err) return
+      const cartCopy = {...JSON.parse(content)};
+      const { products, totalPrice } = cartCopy;
+      const productToDelete = products.find((product) => product.id === id);
+      if (!productToDelete) return;
+      cartCopy.totalPrice = totalPrice - (price * productToDelete.quantity);
+      cartCopy.products = products.filter((product) => product.id !== id);
+      fs.writeFile(PATH_TO_DATA, JSON.stringify(cartCopy), (err) => {
+        if (err) console.log(err);
+      });
+    });
+  }
+
+  static getCart(cb) {
+    fs.readFile(PATH_TO_DATA, (err, content) => {
+      if (err) cb(null);
+      else cb(JSON.parse(content));
+    });
+  }
+}

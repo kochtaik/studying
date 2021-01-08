@@ -1,1 +1,14 @@
 extends ../templates/main.pug
+
+block content
+  main
+    if cartProducts.length > 0
+      ul
+        each item in cartProducts
+          div
+            p #{`${item.product.title} (${item.cartProductData.quantity})`}
+            form(action="/delete-from-cart", method="POST")
+              button.btn Delete
+              input(type="hidden", name="productId", value=item.product.id)
+    else
+      h1 No products in cart.
