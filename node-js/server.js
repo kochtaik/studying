@@ -10,6 +10,7 @@ const bodyParser = require('body-parser');
 const shop = require('./routes/shop');
 const adminRoutes = require('./routes/admin');
 const errorController = require('./controllers/error');
+const sequelize = require('./utils/sql');
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -20,5 +21,11 @@ app.use('/admin', adminRoutes);
 app.use(shop);
 
 app.use(errorController.get404Page);
+sequelize
+  .sync()
+  .then((res) => {
+    app.listen(3000);
+  })
+  .catch((err) => console.log(err));
 
-app.listen(3000);
+
