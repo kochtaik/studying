@@ -1,16 +1,16 @@
 const app = Vue.createApp({
   data() {
     return {
-      goal: 'Finish the course!',
-      vueLink: 'https://vuejs.org/',
-    };
+      userName: 'Kanstantsin',
+      userAge: 21,
+      imageUrl: 'https://images.freeimages.com/images/large-previews/13f/natal-sofia-4-1431300.jpg',
+    }
   },
   methods: {
-    printGoal() {
-      const random = Math.random();
-      return random > 0.5 ? 'Learn Vue!' : 'Master Vue!';
-    },
+    getRandomNum() {
+      return Math.round(Math.random() * 10);
+    }
   },
 });
 
-app.mount('#user-goal');
+app.mount('#assignment');

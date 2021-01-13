@@ -13,13 +13,21 @@
     <script src="app.js" defer></script>
   </head>
   <body>
-    <header>
-      <h1>Vue Course Goals</h1>
-    </header>
-    <section id="user-goal">
-      <h2>My Course Goal</h2>
-      <p>{{ printGoal() }}</p>
-      <p>Visit the official <a v-bind:href="vueLink" target="blank">Vue webpage</a>!</p>
+    <section id="assignment">
+      <!-- 1) Output your name -->
+      <h2>{{ userName }}</h2>
+      <!-- 2) Output your age -->
+      <p>{{ userAge }}</p>
+      <!-- 3) Output your age + 5 -->
+      <p>{{ userAge + 5}}</p>
+      <!-- 4) Output a random number (0 to 1) -->
+      <p>Favorite Number: {{ getRandomNum() }}</p>
+      <div>
+        <!-- 5) Display some image you found via Google -->
+        <img v-bind:src="imageUrl" alt="A child"/>
+      </div>
+      <!-- 6) Prepopulate the input field with your name via the "value" attribute -->
+      <input type="text" v-bind:value="userName"/>
     </section>
   </body>
 </html>
