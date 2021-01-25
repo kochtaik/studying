@@ -13,21 +13,24 @@
     <script src="app.js" defer></script>
   </head>
   <body>
-    <section id="assignment">
-      <!-- 1) Output your name -->
-      <h2>{{ userName }}</h2>
-      <!-- 2) Output your age -->
-      <p>{{ userAge }}</p>
-      <!-- 3) Output your age + 5 -->
-      <p>{{ userAge + 5}}</p>
-      <!-- 4) Output a random number (0 to 1) -->
-      <p>Favorite Number: {{ getRandomNum() }}</p>
-      <div>
-        <!-- 5) Display some image you found via Google -->
-        <img v-bind:src="imageUrl" alt="A child"/>
-      </div>
-      <!-- 6) Prepopulate the input field with your name via the "value" attribute -->
-      <input type="text" v-bind:value="userName"/>
+    <header>
+      <h1>Vue Dynamic Styling</h1>
+    </header>
+    <section id="styling">
+      <div
+        class="demo"
+        @click="selectBoxA"
+        :class="boxAClasses"></div>
+      <div
+        class="demo"
+        @click="selectBoxB"
+        :class="{active: boxBSelected}"
+      ></div>
+      <div
+        class="demo"
+        @click="selectBoxC"
+        :class="{active: boxCSelected}"
+      ></div>
     </section>
   </body>
 </html>

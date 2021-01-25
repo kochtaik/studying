@@ -1,16 +1,29 @@
 const app = Vue.createApp({
   data() {
     return {
-      userName: 'Kanstantsin',
-      userAge: 21,
-      imageUrl: 'https://images.freeimages.com/images/large-previews/13f/natal-sofia-4-1431300.jpg',
-    }
+      boxASelected: false,
+      boxBSelected: false,
+      boxCSelected: false,
+    };
   },
   methods: {
-    getRandomNum() {
-      return Math.round(Math.random() * 10);
-    }
+    selectBoxA() {
+      this.boxASelected = !this.boxASelected;
+    },
+
+    selectBoxB() {
+      this.boxBSelected = !this.boxBSelected;
+    },
+
+    selectBoxC() {
+      this.boxCSelected = !this.boxCSelected;
+    },
+  },
+  computed: {
+    boxAClasses() {
+      return { active: this.boxASelected };
+    },
   },
 });
 
-app.mount('#assignment');
+app.mount('#styling');
