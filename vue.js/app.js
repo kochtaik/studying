@@ -1,29 +1,19 @@
 const app = Vue.createApp({
   data() {
     return {
-      boxASelected: false,
-      boxBSelected: false,
-      boxCSelected: false,
+      inputGoal: '',
+      goals: [],
     };
   },
   methods: {
-    selectBoxA() {
-      this.boxASelected = !this.boxASelected;
+    addGoal() {
+      this.goals.push(this.inputGoal);
     },
 
-    selectBoxB() {
-      this.boxBSelected = !this.boxBSelected;
-    },
-
-    selectBoxC() {
-      this.boxCSelected = !this.boxCSelected;
-    },
-  },
-  computed: {
-    boxAClasses() {
-      return { active: this.boxASelected };
+    removeGoal(idx) {
+      this.goals.splice(idx, 1);
     },
   },
 });
 
-app.mount('#styling');
+app.mount('#user-goals');
