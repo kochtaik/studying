@@ -152,8 +152,7 @@ export default {
             if (!currencyToDisplay) return;
             currencyToDisplay.price =
               obj.USD > 1 ? obj.USD.toFixed(2) : obj.USD.toPrecision(2);
-            if (currentCurrency.name === this.selected.name) {
-              console.log(this.graph);
+            if (currentCurrency.name === this.selected?.name) {
               this.graph.push(obj.USD);
             }
           });
@@ -175,6 +174,3 @@ export default {
   }
 };
 </script>
-
-<style src="./app.css"></style>
-/* [58, 10, 68, 11] 68 - max 10 - min */
