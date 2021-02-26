@@ -1,13 +1,34 @@
 <template>
-  <div class="container mx-auto flex flex-col items-center bg-gray-100 p-4">
+  <div class="container mx-auto flex flex-col items-center p-4">
+    <div
+      v-if="showSpinner"
+      class="fixed w-100 h-100 opacity-80 bg-purple-800 inset-0 z-50 flex items-center justify-center"
+    >
+      <svg
+        class="animate-spin -ml-1 mr-3 h-12 w-12 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        ></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+    </div>
     <div class="container">
-      <div class="w-full my-4"></div>
       <section>
         <div class="flex">
           <div class="max-w-xs">
-            <label for="wallet" class="block text-sm font-medium text-gray-700"
-              >Тикер</label
-            >
             <div class="mt-1 relative rounded-md shadow-md">
               <input
                 type="text"
@@ -16,9 +37,24 @@
                 class="block w-full pr-10 border-gray-300 text-gray-900 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm rounded-md"
                 placeholder="Например DOGE"
                 v-model="inputValue"
+                @input="matchInput"
                 @keydown.enter="add"
               />
             </div>
+            <div
+              class="flex bg-white shadow-md p-1 rounded-md flex-wrap"
+              v-if="suggestions"
+            >
+              <span
+                v-for="(coin, idx) in suggestions"
+                :key="idx"
+                @click="add"
+                class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
+              >
+                {{ coin }}
+              </span>
+            </div>
+            <div class="text-sm text-red-600">Такой тикер уже добавлен</div>
           </div>
         </div>
         <button
@@ -127,10 +163,13 @@
 export default {
   data() {
     return {
-      inputValue: '',
       currencies: [],
+      coinsList: [],
+      suggestions: [],
+      graph: [],
+      inputValue: '',
       selected: null,
-      graph: []
+      showSpinner: true
     };
   },
   methods: {
@@ -146,6 +185,7 @@ export default {
         )
           .then(data => data.json())
           .then(obj => {
+            console.log('received:', obj)
             const currencyToDisplay = this.currencies.find(
               currency => currency.name === currentCurrency.name
             );
@@ -158,6 +198,8 @@ export default {
           });
       }, 3000);
       this.inputValue = '';
+      this.suggestions = [];
+      console.log(this.currencies)
     },
     deleteCurrency(name) {
       this.currencies = this.currencies.filter(
@@ -170,7 +212,22 @@ export default {
       return this.graph.map(price => {
         return 5 + ((price - minVal) * 95) / (maxVal - minVal);
       });
+    },
+    matchInput() {
+      this.suggestions = this.coinsList
+        .filter(coin => coin.match(new RegExp(`^${this.inputValue}`, 'gi')))
+        .sort()
+        .splice(0, 4);
     }
+  },
+  created() {
+    this.showSpinner = false;
+    fetch('https://min-api.cryptocompare.com/data/all/coinlist?summary=true')
+      .then(data => data.json())
+      .then(obj => {
+        this.coinsList = Object.keys(obj.Data);
+      })
+      .catch(err => console.log(err));
   }
 };
 </script>
