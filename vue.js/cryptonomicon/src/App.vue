@@ -38,7 +38,7 @@
                 placeholder="Например DOGE"
                 v-model="inputValue"
                 @input="matchInput"
-                @keydown.enter="add"
+                @keydown.enter="add(suggestions[0])"
               />
             </div>
             <div
@@ -48,19 +48,21 @@
               <span
                 v-for="(coin, idx) in suggestions"
                 :key="idx"
-                @click="add"
+                @click="add(coin)"
                 class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
               >
                 {{ coin }}
               </span>
             </div>
-            <div class="text-sm text-red-600">Такой тикер уже добавлен</div>
+            <div class="text-sm text-red-600" v-if="showWarn">
+              Такой тикер уже добавлен
+            </div>
           </div>
         </div>
         <button
           type="button"
           class="my-4 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-          @click="add"
+          @click="add(suggestions[0])"
         >
           <!-- Heroicon name: solid/mail -->
           <svg
@@ -165,17 +167,19 @@ export default {
     return {
       currencies: [],
       coinsList: [],
-      suggestions: [],
       graph: [],
       inputValue: '',
       selected: null,
-      showSpinner: true
+      showSpinner: true,
+      showWarn: false
     };
   },
   methods: {
-    add() {
+    add(currency) {
+      if (!this.isInputValid(currency)) return;
+
       const currentCurrency = {
-        name: this.inputValue.toUpperCase(),
+        name: currency.toUpperCase(),
         price: '-'
       };
       this.currencies.push(currentCurrency);
@@ -185,7 +189,6 @@ export default {
         )
           .then(data => data.json())
           .then(obj => {
-            console.log('received:', obj)
             const currencyToDisplay = this.currencies.find(
               currency => currency.name === currentCurrency.name
             );
@@ -198,13 +201,26 @@ export default {
           });
       }, 3000);
       this.inputValue = '';
-      this.suggestions = [];
-      console.log(this.currencies)
     },
     deleteCurrency(name) {
       this.currencies = this.currencies.filter(
         currency => currency.name !== name
       );
+    },
+    isInputValid(currency) {
+      if (!currency) return false;
+
+      // if (this.currencies.length > 0) {
+        const hasDuplicate = this.currencies.some(
+          item => item.name === currency
+        );
+        if (hasDuplicate) {
+          this.showWarn = true;
+          return false;
+        }
+      // }
+      this.showWarn = false;
+      return true;
     },
     noramlizeGraph() {
       let minVal = Math.min.apply(null, this.graph);
@@ -212,12 +228,16 @@ export default {
       return this.graph.map(price => {
         return 5 + ((price - minVal) * 95) / (maxVal - minVal);
       });
-    },
-    matchInput() {
-      this.suggestions = this.coinsList
-        .filter(coin => coin.match(new RegExp(`^${this.inputValue}`, 'gi')))
-        .sort()
-        .splice(0, 4);
+    }
+  },
+  computed: {
+    suggestions() {
+      return this.inputValue
+        ? this.coinsList
+            .filter(coin => coin.match(new RegExp(`^${this.inputValue}`, 'gi')))
+            .sort()
+            .splice(0, 4)
+        : [];
     }
   },
   created() {
