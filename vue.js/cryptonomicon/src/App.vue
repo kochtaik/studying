@@ -183,22 +183,22 @@ export default {
         price: '-'
       };
       this.currencies.push(currentCurrency);
-      setInterval(() => {
-        fetch(
+      setInterval(async () => {
+        const res = await fetch(
           `https://min-api.cryptocompare.com/data/price?fsym=${currentCurrency.name}&tsyms=USD&api_key=1f976776ae2ffe846eee61fdaa425aa7bcf46330c24916db2e5bbbb0c76727a3`
-        )
-          .then(data => data.json())
-          .then(obj => {
-            const currencyToDisplay = this.currencies.find(
-              currency => currency.name === currentCurrency.name
-            );
-            if (!currencyToDisplay) return;
-            currencyToDisplay.price =
-              obj.USD > 1 ? obj.USD.toFixed(2) : obj.USD.toPrecision(2);
-            if (currentCurrency.name === this.selected?.name) {
-              this.graph.push(obj.USD);
-            }
-          });
+        );
+        const currencyData = await res.json();
+        const currencyToDisplay = this.currencies.find(
+          currency => currency.name === currentCurrency.name
+        );
+        if (!currencyToDisplay) return;
+        currencyToDisplay.price =
+          currencyData.USD > 1
+            ? currencyData.USD.toFixed(2)
+            : currencyData.USD.toPrecision(2);
+        if (currentCurrency.name === this.selected?.name) {
+          this.graph.push(currencyData.USD);
+        }
       }, 3000);
       this.inputValue = '';
     },
@@ -210,15 +210,11 @@ export default {
     isInputValid(currency) {
       if (!currency) return false;
 
-      // if (this.currencies.length > 0) {
-        const hasDuplicate = this.currencies.some(
-          item => item.name === currency
-        );
-        if (hasDuplicate) {
-          this.showWarn = true;
-          return false;
-        }
-      // }
+      const hasDuplicate = this.currencies.some(item => item.name === currency);
+      if (hasDuplicate) {
+        this.showWarn = true;
+        return false;
+      }
       this.showWarn = false;
       return true;
     },
@@ -242,12 +238,13 @@ export default {
   },
   created() {
     this.showSpinner = false;
-    fetch('https://min-api.cryptocompare.com/data/all/coinlist?summary=true')
-      .then(data => data.json())
-      .then(obj => {
-        this.coinsList = Object.keys(obj.Data);
-      })
-      .catch(err => console.log(err));
+    (async () => {
+      const response = await fetch(
+        'https://min-api.cryptocompare.com/data/all/coinlist?summary=true'
+      );
+      const list = await response.json();
+      this.coinsList = Object.keys(list.Data);
+    })();
   }
 };
 </script>
