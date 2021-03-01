@@ -175,6 +175,26 @@ export default {
     };
   },
   methods: {
+    subscribeCurrency(currencyName) {
+      setInterval(async () => {
+        const res = await fetch(
+          `https://min-api.cryptocompare.com/data/price?fsym=${currencyName}&tsyms=USD&api_key=1f976776ae2ffe846eee61fdaa425aa7bcf46330c24916db2e5bbbb0c76727a3`
+        );
+        const currencyData = await res.json();
+        const currencyToDisplay = this.currencies.find(
+          currency => currency.name === currencyName
+        );
+        if (!currencyToDisplay) return;
+        currencyToDisplay.price =
+          currencyData.USD > 1
+            ? currencyData.USD.toFixed(2)
+            : currencyData.USD.toPrecision(2);
+        if (currencyName === this.selected?.name) {
+          this.graph.push(currencyData.USD);
+        }
+      }, 3000);
+    },
+
     add(currency) {
       if (!this.isInputValid(currency)) return;
 
@@ -182,31 +202,21 @@ export default {
         name: currency.toUpperCase(),
         price: '-'
       };
+
       this.currencies.push(currentCurrency);
-      setInterval(async () => {
-        const res = await fetch(
-          `https://min-api.cryptocompare.com/data/price?fsym=${currentCurrency.name}&tsyms=USD&api_key=1f976776ae2ffe846eee61fdaa425aa7bcf46330c24916db2e5bbbb0c76727a3`
-        );
-        const currencyData = await res.json();
-        const currencyToDisplay = this.currencies.find(
-          currency => currency.name === currentCurrency.name
-        );
-        if (!currencyToDisplay) return;
-        currencyToDisplay.price =
-          currencyData.USD > 1
-            ? currencyData.USD.toFixed(2)
-            : currencyData.USD.toPrecision(2);
-        if (currentCurrency.name === this.selected?.name) {
-          this.graph.push(currencyData.USD);
-        }
-      }, 3000);
+      this.subscribeCurrency(currentCurrency.name);
+
+      localStorage.setItem('currencies', JSON.stringify(this.currencies));
       this.inputValue = '';
     },
+
     deleteCurrency(name) {
       this.currencies = this.currencies.filter(
         currency => currency.name !== name
       );
+      localStorage.setItem('currencies', JSON.stringify(this.currencies));
     },
+
     isInputValid(currency) {
       if (!currency) return false;
 
@@ -218,6 +228,7 @@ export default {
       this.showWarn = false;
       return true;
     },
+
     noramlizeGraph() {
       let minVal = Math.min.apply(null, this.graph);
       let maxVal = Math.max.apply(null, this.graph);
@@ -238,6 +249,12 @@ export default {
   },
   created() {
     this.showSpinner = false;
+
+    const savedCurrencies = localStorage.getItem('currencies');
+    if (savedCurrencies) this.currencies = JSON.parse(savedCurrencies);
+
+    this.currencies.forEach(currency => this.subscribeCurrency(currency.name));
+
     (async () => {
       const response = await fetch(
         'https://min-api.cryptocompare.com/data/all/coinlist?summary=true'
