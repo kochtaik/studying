@@ -82,10 +82,30 @@
       </section>
       <template v-if="currencies.length > 0">
         <hr class="w-full border-t border-gray-600 my-4" />
+        <input
+          v-model="filterValue"
+          placeholder="Название валюты..."
+          type="text"
+        />
+        <button
+          v-if="currentPage > 1"
+          class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          @click="currentPage -= 1"
+        >
+          &lt;
+        </button>
+        <button
+          v-if="isLastPage"
+          @click="currentPage += 1"
+          class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+        >
+          &gt;
+        </button>
+        <hr class="w-full border-t border-gray-600 my-4" />
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
           <div
             class="bg-white overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer"
-            v-for="(currency, idx) in currencies"
+            v-for="(currency, idx) in filterCurrencies()"
             :key="idx"
             @click.stop="(selected = currency), (graph = [])"
             :class="{ 'border-4': selected === currency }"
@@ -169,9 +189,12 @@ export default {
       coinsList: [],
       graph: [],
       inputValue: '',
+      filterValue: '',
       selected: null,
       showSpinner: true,
-      showWarn: false
+      showWarn: false,
+      currentPage: 1,
+      isLastPage: false
     };
   },
   methods: {
@@ -208,6 +231,7 @@ export default {
 
       localStorage.setItem('currencies', JSON.stringify(this.currencies));
       this.inputValue = '';
+      this.filterValue = '';
     },
 
     deleteCurrency(name) {
@@ -216,7 +240,18 @@ export default {
       );
       localStorage.setItem('currencies', JSON.stringify(this.currencies));
     },
+    filterCurrencies() {
+      const currenciesPerPage = 6;
+      const start = currenciesPerPage * (this.currentPage - 1);
+      const end = this.currentPage * currenciesPerPage;
+      const filtered = this.currencies.filter(currency =>
+        currency.name.includes(this.filterValue.toUpperCase())
+      );
 
+      this.isLastPage = end < filtered.length;
+
+      return filtered.slice(start, end);
+    },
     isInputValid(currency) {
       if (!currency) return false;
 
