@@ -82,25 +82,27 @@
       </section>
       <template v-if="currencies.length > 0">
         <hr class="w-full border-t border-gray-600 my-4" />
-        <input
-          v-model="filterValue"
-          placeholder="Название валюты..."
-          type="text"
-        />
-        <button
-          v-if="currentPage > 1"
-          class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-          @click="currentPage -= 1"
-        >
-          &lt;
-        </button>
-        <button
-          v-if="isLastPage"
-          @click="currentPage += 1"
-          class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-        >
-          &gt;
-        </button>
+        <div>
+          <input
+            v-model="filterValue"
+            placeholder="Название валюты..."
+            type="text"
+          />
+          <button
+            v-if="currentPage > 1"
+            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            @click="currentPage -= 1"
+          >
+            &lt;
+          </button>
+          <button
+            v-if="isLastPage"
+            @click="currentPage += 1"
+            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            &gt;
+          </button>
+        </div>
         <hr class="w-full border-t border-gray-600 my-4" />
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
           <div
@@ -240,6 +242,7 @@ export default {
       );
       localStorage.setItem('currencies', JSON.stringify(this.currencies));
     },
+
     filterCurrencies() {
       const currenciesPerPage = 6;
       const start = currenciesPerPage * (this.currentPage - 1);
@@ -252,6 +255,7 @@ export default {
 
       return filtered.slice(start, end);
     },
+
     isInputValid(currency) {
       if (!currency) return false;
 
@@ -282,11 +286,39 @@ export default {
         : [];
     }
   },
+  watch: {
+    filterValue() {
+      const { pathname } = window.location;
+      window.history.pushState(
+        null,
+        document.title,
+        `${pathname}?filter=${this.filterValue}&page=${this.currentPage}`
+      );
+      this.currentPage = 1;
+    },
+
+    currentPage() {
+      window.history.pushState(
+        null,
+        document.title,
+        `${window.location.pathname}?filter=${this.filterValue}&page=${this.currentPage}`
+      );
+    }
+  },
   created() {
     this.showSpinner = false;
 
     const savedCurrencies = localStorage.getItem('currencies');
     if (savedCurrencies) this.currencies = JSON.parse(savedCurrencies);
+    const savedFilterValue = Object.fromEntries(
+      new URL(window.location).searchParams.entries()
+    );
+    if (savedFilterValue.filter) {
+      this.filterValue = savedFilterValue.filter;
+    }
+    if (savedFilterValue.page) {
+      this.currentPage = savedFilterValue.page;
+    }
 
     this.currencies.forEach(currency => this.subscribeCurrency(currency.name));
 
