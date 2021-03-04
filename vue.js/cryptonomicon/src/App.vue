@@ -107,9 +107,9 @@
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
           <div
             class="bg-white overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer"
-            v-for="(currency, idx) in filterCurrencies()"
+            v-for="(currency, idx) in slicedFilteredCurrencies"
             :key="idx"
-            @click.stop="(selected = currency), (graph = [])"
+            @click.stop="selectCurrency(currency)"
             :class="{ 'border-4': selected === currency }"
           >
             <div class="px-4 py-5 sm:p-6 text-center">
@@ -123,7 +123,7 @@
             <div class="w-full border-t border-gray-200"></div>
             <button
               class="flex items-center justify-center font-medium w-full bg-gray-100 px-4 py-4 sm:px-6 text-md text-gray-500 hover:text-gray-600 hover:bg-gray-200 hover:opacity-20 transition-all focus:outline-none"
-              @click="deleteCurrency(currency.name)"
+              @click.stop="deleteCurrency(currency.name)"
             >
               <svg
                 class="h-5 w-5"
@@ -150,7 +150,7 @@
         <div class="flex items-end border-gray-600 border-b border-l h-64">
           <div
             class="bg-purple-800 border w-10"
-            v-for="(bar, idx) in noramlizeGraph()"
+            v-for="(bar, idx) in noramlizedGraph"
             :style="`height: ${bar}%;`"
             :key="idx"
           ></div>
@@ -196,7 +196,7 @@ export default {
       showSpinner: true,
       showWarn: false,
       currentPage: 1,
-      isLastPage: false
+      currenciesPerPage: 6
     };
   },
   methods: {
@@ -241,19 +241,11 @@ export default {
         currency => currency.name !== name
       );
       localStorage.setItem('currencies', JSON.stringify(this.currencies));
+      this.selected = null;
     },
 
-    filterCurrencies() {
-      const currenciesPerPage = 6;
-      const start = currenciesPerPage * (this.currentPage - 1);
-      const end = this.currentPage * currenciesPerPage;
-      const filtered = this.currencies.filter(currency =>
-        currency.name.includes(this.filterValue.toUpperCase())
-      );
-
-      this.isLastPage = end < filtered.length;
-
-      return filtered.slice(start, end);
+    selectCurrency(currency) {
+      this.selected = currency;
     },
 
     isInputValid(currency) {
@@ -266,14 +258,6 @@ export default {
       }
       this.showWarn = false;
       return true;
-    },
-
-    noramlizeGraph() {
-      let minVal = Math.min.apply(null, this.graph);
-      let maxVal = Math.max.apply(null, this.graph);
-      return this.graph.map(price => {
-        return 5 + ((price - minVal) * 95) / (maxVal - minVal);
-      });
     }
   },
   computed: {
@@ -284,6 +268,46 @@ export default {
             .sort()
             .splice(0, 4)
         : [];
+    },
+
+    pageOptions() {
+      return {
+        filterValue: this.filterValue,
+        currentPage: this.currentPage
+      };
+    },
+
+    noramlizedGraph() {
+      let minVal = Math.min.apply(null, this.graph);
+      let maxVal = Math.max.apply(null, this.graph);
+      if (minVal === maxVal) {
+        return this.graph.map(() => 50);
+      }
+      return this.graph.map(price => {
+        return 5 + ((price - minVal) * 95) / (maxVal - minVal);
+      });
+    },
+
+    filteredCurrencies() {
+      return this.currencies.filter(currency =>
+        currency.name.includes(this.filterValue.toUpperCase())
+      );
+    },
+
+    slicedFilteredCurrencies() {
+      return this.filteredCurrencies.slice(this.startIdx, this.endIdx);
+    },
+
+    startIdx() {
+      return (this.currentPage - 1) * this.currenciesPerPage;
+    },
+
+    endIdx() {
+      return this.currentPage * this.currenciesPerPage;
+    },
+
+    isLastPage() {
+      return this.endIdx < this.filteredCurrencies.length;
     }
   },
   watch: {
@@ -297,12 +321,22 @@ export default {
       this.currentPage = 1;
     },
 
-    currentPage() {
+    slicedFilteredCurrencies() {
+      if (this.slicedFilteredCurrencies.length === 0 && this.currentPage > 1) {
+        this.currentPage -= 1;
+      }
+    },
+
+    pageOptions(value) {
       window.history.pushState(
         null,
         document.title,
-        `${window.location.pathname}?filter=${this.filterValue}&page=${this.currentPage}`
+        `${window.location.pathname}?filter=${value.filterValue}&page=${value.currentPage}`
       );
+    },
+
+    selected() {
+      this.graph = [];
     }
   },
   created() {
