@@ -117,7 +117,7 @@
                 {{ currency.name }} - USD
               </dt>
               <dd class="mt-1 text-3xl font-semibold text-gray-900">
-                {{ currency.price }}
+                {{ formatPrice(currency.price) }}
               </dd>
             </div>
             <div class="w-full border-t border-gray-200"></div>
@@ -184,6 +184,8 @@
 </template>
 
 <script>
+import { fetchCurrencyData } from './api';
+
 export default {
   data() {
     return {
@@ -200,24 +202,25 @@ export default {
     };
   },
   methods: {
-    subscribeCurrency(currencyName) {
-      setInterval(async () => {
-        const res = await fetch(
-          `https://min-api.cryptocompare.com/data/price?fsym=${currencyName}&tsyms=USD&api_key=1f976776ae2ffe846eee61fdaa425aa7bcf46330c24916db2e5bbbb0c76727a3`
-        );
-        const currencyData = await res.json();
-        const currencyToDisplay = this.currencies.find(
-          currency => currency.name === currencyName
-        );
-        if (!currencyToDisplay) return;
-        currencyToDisplay.price =
-          currencyData.USD > 1
-            ? currencyData.USD.toFixed(2)
-            : currencyData.USD.toPrecision(2);
-        if (currencyName === this.selected?.name) {
-          this.graph.push(currencyData.USD);
-        }
-      }, 3000);
+    formatPrice(price) {
+      if (price === '-') return '-';
+      return price > 1 ? price.toFixed(2) : price.toPrecision(2);
+    },
+
+    async updateCurrenciesData() {
+      if (this.currencies.length === 0) return;
+
+      const currenciesNames = this.currencies
+        .map(currency => currency.name)
+        .join(',');
+
+      const fetchedCurrencyData = await fetchCurrencyData(currenciesNames);
+
+      this.currencies.forEach(currency => {
+        const price = fetchedCurrencyData[currency.name];
+        if (!price) return;
+        currency.price = price;
+      });
     },
 
     add(currency) {
@@ -229,7 +232,6 @@ export default {
       };
 
       this.currencies.push(currentCurrency);
-      this.subscribeCurrency(currentCurrency.name);
 
       localStorage.setItem('currencies', JSON.stringify(this.currencies));
       this.inputValue = '';
@@ -343,7 +345,11 @@ export default {
     this.showSpinner = false;
 
     const savedCurrencies = localStorage.getItem('currencies');
-    if (savedCurrencies) this.currencies = JSON.parse(savedCurrencies);
+    if (savedCurrencies) {
+      this.currencies = JSON.parse(savedCurrencies);
+    }
+    setInterval(this.updateCurrenciesData, 5000);
+
     const savedFilterValue = Object.fromEntries(
       new URL(window.location).searchParams.entries()
     );
@@ -353,8 +359,6 @@ export default {
     if (savedFilterValue.page) {
       this.currentPage = savedFilterValue.page;
     }
-
-    this.currencies.forEach(currency => this.subscribeCurrency(currency.name));
 
     (async () => {
       const response = await fetch(
